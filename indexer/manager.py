@@ -71,14 +71,9 @@ class IndexManager(Manager):
         module_name = instance._meta.module_name
         tbl = self.model._meta.db_table
         cursor = connection.cursor()
-        try:
-            cursor.execute('begin')
-            cursor.execute('delete from `%s` WHERE `app_label` = %%s AND `module_name` = %%s AND `object_id` = %%s' % (tbl,), [app_label, module_name, instance.pk])
-            cursor.execute('commit')
-            # TODO: Delete each cache for instance
-            # cache.delete('%s:%s:%s=%s' % (app_label, module_name, column))
-        finally:
-            cursor.close()
+        self.filter(app_label=app_label, module_name=module_name, object_id=instance.pk).delete()
+        # TODO: Delete each cache for instance
+        # cache.delete('%s:%s:%s=%s' % (app_label, module_name, column))
     
     def save_in_index(self, instance, column):
         """Updates an index for an instance.
@@ -94,12 +89,14 @@ class IndexManager(Manager):
             value = value.get(bit)
         cursor = connection.cursor()
         try:
-            cursor.execute('begin')
             if not value:
-                cursor.execute('delete from `%s` WHERE `app_label` = %%s AND `module_name` = %%s AND `object_id` = %%s AND `column` = %%s' % (tbl,), [app_label, module_name, instance.pk, column])
+                self.filter(app_label=app_label, module_name=module_name, object_id=instance.pk, column=column).delete()
             else:
-                cursor.execute('insert into `%s` (`id`, `app_label`, `module_name`, `object_id`, `column`, `value`) values (%%s, %%s, %%s, %%s, %%s, %%s) on duplicate key update `value` = values(`value`)' % (tbl,), [uuid.uuid4().hex, app_label, module_name, instance.pk, column, value])
-            cursor.execute('commit')
+                qs = self.filter(app_label=app_label, module_name=module_name, object_id=instance.pk, column=column)
+                if qs.exists():
+                    qs.update(value=value)
+                else:
+                    self.create(app_label=app_label, module_name=module_name, object_id=instance.pk, column=column, value=value)
             # TODO: this needs to take the original value and wipe its cache as well
             cache.delete('%s:%s:%s=%s' % (app_label, module_name, column, value))
         finally:
@@ -117,14 +114,10 @@ class IndexManager(Manager):
         module_name = model_class._meta.module_name
         column_bits = column.split(COLUMN_SEPARATOR)
         cursor = connection.cursor()
-        try:
-            cursor.execute('set autocommit = 1')
-            for m in model_class.objects.all():
-                value = m
-                for bit in column_bits:
-                    value = value.get(bit)
-                if not value:
-                    continue
-                cursor.execute('insert into `%s` (`id`, `app_label`, `module_name`, `object_id`, `column`, `value`) values (%%s, %%s, %%s, %%s, %%s, %%s) on duplicate key update `value` = values(`value`)' %(self.model._meta.db_table,), [uuid.uuid4().hex, app_label, module_name, m.pk, column, value])
-        finally:
-            cursor.close()
+        for m in model_class.objects.all():
+            value = m
+            for bit in column_bits:
+                value = value.get(bit)
+            if not value:
+                continue
+            self.create(app_label=app_label, module_name=module_name, object_id=m.pk, column=column, value=value)
