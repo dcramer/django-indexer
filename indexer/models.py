@@ -3,7 +3,7 @@ from django.db.models import signals
 
 from uuidfield.fields import UUIDField
 
-from indexer.managers import *
+from indexer.manager import *
 
 __all__ = ('Index',)
 
