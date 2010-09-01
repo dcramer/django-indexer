@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models import signals
 
-from uuidfield import UUIDField
+from uuidfield.fields import UUIDField
 
 from indexer.managers import *
 

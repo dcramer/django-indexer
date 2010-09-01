@@ -10,7 +10,7 @@ setup(
     description='Key/Value Indexer',
     url='http://github.com/dcramer/django-indexer',
     packages=find_packages(),
-    requires=['django-uuidfield']
+    requirements=['django-uuidfield'],
     include_package_data=True,
     classifiers=[
         "Framework :: Django",
