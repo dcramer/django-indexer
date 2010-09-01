@@ -27,9 +27,8 @@ class Index(models.Model):
     @classmethod
     def handle_save(cls, sender, instance, created, **kwargs):
         """Handles updating this model's indexes."""
-        print sender
-        for column in Index.indexes[sender]:
-            cls.objects.save_in_index(instance, column)
+        for column, index_to in Index.indexes[sender]:
+            cls.objects.save_in_index(instance, column, index_to)
 
     @classmethod
     def handle_delete(cls, sender, instance, **kwargs):
