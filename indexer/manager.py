@@ -1,5 +1,5 @@
+from django.db.models import signals
 from django.db.models.manager import Manager
-from django.db import connection
 from django.core.cache import cache
 
 from indexer.utils import Proxy
@@ -65,12 +65,14 @@ class IndexManager(Manager):
             self.model.indexes[model_class] = set([column])
         else:
             self.model.indexes[model_class].add(column)
+        signals.post_save.connect(self.model.handle_save, sender=model_class)
+        signals.pre_delete.connect(self.model.handle_delete, sender=model_class)
+        
     
     def remove_from_index(self, instance):
         app_label = instance._meta.app_label
         module_name = instance._meta.module_name
         tbl = self.model._meta.db_table
-        cursor = connection.cursor()
         self.filter(app_label=app_label, module_name=module_name, object_id=instance.pk).delete()
         # TODO: Delete each cache for instance
         # cache.delete('%s:%s:%s=%s' % (app_label, module_name, column))
@@ -85,22 +87,23 @@ class IndexManager(Manager):
         module_name = instance._meta.module_name
         tbl = self.model._meta.db_table
         value = instance
+        first = True
         for bit in column.split(COLUMN_SEPARATOR):
-            value = value.get(bit)
-        cursor = connection.cursor()
-        try:
-            if not value:
-                self.filter(app_label=app_label, module_name=module_name, object_id=instance.pk, column=column).delete()
+            if first:
+                value = getattr(value, bit)
+                first = False
             else:
-                qs = self.filter(app_label=app_label, module_name=module_name, object_id=instance.pk, column=column)
-                if qs.exists():
-                    qs.update(value=value)
-                else:
-                    self.create(app_label=app_label, module_name=module_name, object_id=instance.pk, column=column, value=value)
-            # TODO: this needs to take the original value and wipe its cache as well
-            cache.delete('%s:%s:%s=%s' % (app_label, module_name, column, value))
-        finally:
-            cursor.close()
+                value = value.get(bit)
+        if not value:
+            self.filter(app_label=app_label, module_name=module_name, object_id=instance.pk, column=column).delete()
+        else:
+            qs = self.filter(app_label=app_label, module_name=module_name, object_id=instance.pk, column=column)
+            if qs.exists():
+                qs.update(value=value)
+            else:
+                self.create(app_label=app_label, module_name=module_name, object_id=instance.pk, column=column, value=value)
+        # TODO: this needs to take the original value and wipe its cache as well
+        cache.delete('%s:%s:%s=%s' % (app_label, module_name, column, value))
     
     def create_index(self, model_class, column):
         """Creates and prepopulates an index.
@@ -113,7 +116,6 @@ class IndexManager(Manager):
         app_label = model_class._meta.app_label
         module_name = model_class._meta.module_name
         column_bits = column.split(COLUMN_SEPARATOR)
-        cursor = connection.cursor()
         for m in model_class.objects.all():
             value = m
             for bit in column_bits:
