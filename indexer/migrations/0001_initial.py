@@ -15,7 +15,7 @@ class Migration(SchemaMigration):
             ('module_name', self.gf('django.db.models.fields.CharField')(max_length=32)),
             ('column', self.gf('django.db.models.fields.CharField')(max_length=32)),
             ('value', self.gf('django.db.models.fields.CharField')(max_length=128)),
-            ('object_id', self.gf('django.db.models.fields.CharField')(max_length=32)),
+            ('object_id', self.gf('django.db.models.fields.PositiveIntegerField')()),
         ))
         db.send_create_signal('indexer', ['Index'])
 
@@ -39,7 +39,7 @@ class Migration(SchemaMigration):
             'column': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'module_name': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
-            'object_id': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
+            'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'value': ('django.db.models.fields.CharField', [], {'max_length': '128'})
         }
     }

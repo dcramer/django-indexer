@@ -9,7 +9,7 @@ class Index(models.Model):
     module_name = models.CharField(max_length=32)
     column      = models.CharField(max_length=32)
     value       = models.CharField(max_length=128)
-    object_id   = models.CharField(max_length=32)
+    object_id   = models.PositiveIntegerField()
     
     objects     = IndexManager()
     
