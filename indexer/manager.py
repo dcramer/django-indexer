@@ -56,7 +56,6 @@ class LazyIndexLookup(Proxy):
                     value,
                 ],
             )
-            print str(qs.query)
 
         object.__setattr__(self, '__instance__', qs)
         return qs
