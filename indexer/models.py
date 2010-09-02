@@ -1,13 +1,10 @@
 from django.db import models
 
-from uuidfield.fields import UUIDField
-
 from indexer.manager import *
 
 __all__ = ('Index',)
 
 class Index(models.Model):
-    id          = UUIDField(auto=True, primary_key=True)
     app_label   = models.CharField(max_length=32)
     module_name = models.CharField(max_length=32)
     column      = models.CharField(max_length=32)

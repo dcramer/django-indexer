@@ -44,7 +44,7 @@ class LazyIndexLookup(Proxy):
             qs = qs.extra(
                 # tables=['%s as %s' % (tbl, cid)],
                 tables=[tbl],
-                where=['%(cid)s.module_name = %%s and %(cid)s.app_label = %%s and %(cid)s.column = %%s and %(cid)s.value = %%s and %(cid)s.object_id = %(main)s.%(pk)s::varchar' % dict(
+                where=['%(cid)s.module_name = %%s and %(cid)s.app_label = %%s and %(cid)s.column = %%s and %(cid)s.value = %%s and %(cid)s.object_id = %(main)s.%(pk)s' % dict(
                     cid=cid,
                     pk=pk,
                     main=main,
