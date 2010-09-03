@@ -112,7 +112,7 @@ class IndexManager(Manager):
             if first:
                 value = getattr(value, bit)
                 first = False
-            else:
+            elif value is not None:
                 value = value.get(bit)
         if not value:
             self.filter(app_label=app_label, module_name=module_name, object_id=object_id, column=column).delete()
