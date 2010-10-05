@@ -10,6 +10,7 @@ setup(
     description='Key/Value Indexer',
     url='http://github.com/dcramer/django-indexer',
     packages=find_packages(),
+    zip_safe=False,
     include_package_data=True,
     classifiers=[
         "Framework :: Django",
