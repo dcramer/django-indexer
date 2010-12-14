@@ -1,0 +1,13 @@
+Source: python-django-indexer
+Section: python
+Priority: optional
+Maintainer: Bruno Clermont <bruno.clermont@gmail.com>
+Homepage: https://github.com/bclermont/django-indexer
+Bugs: https://github.com/bclermont/indexer/issues
+Build-Depends: debhelper, python-support
+
+Package: python-django-indexer
+Architecture: all
+Depends: ${python:Depends}, python-support, python-django
+Provides: ${python:Provides}
+Description: Key/Value Indexer
