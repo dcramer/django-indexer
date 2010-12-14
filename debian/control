@@ -3,7 +3,7 @@ Section: python
 Priority: optional
 Maintainer: David Cramer <dcramer@gmail.com>
 Homepage: https://github.com/dcramer/django-indexer
-Bugs: https://github.com/dcramer/django-paging/issues
+Bugs: https://github.com/dcramer/django-indexer/issues
 Build-Depends: debhelper, python-support
 
 Package: python-django-indexer
