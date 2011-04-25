@@ -11,7 +11,7 @@ class BaseIndex(models.Model):
     
     objects     = BaseIndexManager()
     
-    __indexes     = set()
+    _indexes     = set()
     model       = None
     
     class Meta:
@@ -28,7 +28,7 @@ class BaseIndex(models.Model):
     @classmethod
     def handle_save(cls, sender, instance, created, **kwargs):
         """Handles updating this model's indexes."""
-        for column, index_to in cls.__indexes:
+        for column, index_to in cls._indexes:
             cls.objects.save_in_index(instance, column, index_to)
 
     @classmethod

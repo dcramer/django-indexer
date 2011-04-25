@@ -14,8 +14,9 @@ setup(
     tests_require=[
         'django',
         'unittest2',
+        'south',
     ],
-    test_suite='unittest2.collector',
+    test_suite='indexer.runtests.runtests',
     include_package_data=True,
     classifiers=[
         "Framework :: Django",

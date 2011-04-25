@@ -57,7 +57,7 @@ class LazyIndexLookup(Proxy):
         return qs
     _current_object = property(_get_current_object)
 
-class BaseLazyIndexLookup(Proxy):
+class BaseLazyIndexLookup(LazyIndexLookup):
     def _get_current_object(self):
         """
         Return the current object.  This is useful if you want the real object
@@ -192,8 +192,6 @@ class IndexManager(Manager):
                     first = False
                 else:
                     value = value.get(bit)
-            for bit in column_bits:
-                value = value.get(bit)
             if not value:
                 continue
             self.create(app_label=app_label, module_name=module_name, object_id=object_id, column=column, value=value)
@@ -204,17 +202,17 @@ class BaseIndexManager(Manager):
         if len(kwargs) < 1:
             raise ValueError
         
-        return LazyIndexLookup(self.model, self.model.get_model(), None, **kwargs)
+        return BaseLazyIndexLookup(self.model, self.model.get_model(), **kwargs)
     
     def get_for_queryset(self, queryset, **kwargs):
         if len(kwargs) < 1:
             raise ValueError
         
-        return LazyIndexLookup(self.model, queryset.model, queryset, **kwargs)
+        return BaseLazyIndexLookup(self.model, queryset.model, queryset, **kwargs)
     
     def register_index(self, column, index_to=None):
         """Registers a model and an index for it."""
-        self.model.__indexes.add((column, index_to))
+        self.model._indexes.add((column, index_to))
         model_class = self.model.get_model()
         signals.post_save.connect(self.model.handle_save, sender=model_class)
         signals.pre_delete.connect(self.model.handle_delete, sender=model_class)
@@ -284,8 +282,6 @@ class BaseIndexManager(Manager):
                     first = False
                 else:
                     value = value.get(bit)
-            for bit in column_bits:
-                value = value.get(bit)
             if not value:
                 continue
             self.create(object_id=object_id, column=column, value=value)
